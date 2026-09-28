@@ -3,6 +3,7 @@ package com.hpsdstudio.lisa
 import android.app.SearchManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -32,8 +33,8 @@ private const val TAG = "Lisa"
 private const val SPOTIFY_PACKAGE = "com.spotify.music"
 
 /**
- * M0 — Spotify spike. One text field, one button. Fires
- * [MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH] at the Spotify app and
+ * M0 — Spotify spike. One text field, three variant buttons (unstructured,
+ * structured, ACTION_VIEW fallback). Fires each at the Spotify app and
  * reports what happened. See docs/PROJECT_SPEC.md section 5.
  */
 class MainActivity : ComponentActivity() {
@@ -42,13 +43,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    M0Screen(onPlay = ::firePlayFromSearch)
+                    M0Screen(
+                        onUnstructured = ::fireUnstructured,
+                        onStructured = ::fireStructured,
+                        onViewFallback = ::fireViewFallback,
+                    )
                 }
             }
         }
     }
 
-    private fun firePlayFromSearch(query: String): String {
+    private fun fireUnstructured(query: String): String {
         // Unstructured search mode: artist + title + album in one free-text string.
         // Ref: developer.android.com "Common intents — Play music based on a search query".
         val intent = Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH).apply {
@@ -56,26 +61,57 @@ class MainActivity : ComponentActivity() {
             putExtra(MediaStore.EXTRA_MEDIA_FOCUS, "vnd.android.cursor.item/*")
             putExtra(SearchManager.QUERY, query)
         }
+        return fire("play-from-search", intent, query)
+    }
+
+    private fun fireStructured(query: String): String {
+        // Structured "Song" search mode: explicit title extra.
+        // Ref: same Common Intents page (Song mode).
+        val intent = Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH).apply {
+            setPackage(SPOTIFY_PACKAGE)
+            putExtra(MediaStore.EXTRA_MEDIA_FOCUS, MediaStore.Audio.Media.ENTRY_CONTENT_TYPE)
+            putExtra(MediaStore.EXTRA_MEDIA_TITLE, query)
+            putExtra(SearchManager.QUERY, query)
+        }
+        return fire("structured", intent, query)
+    }
+
+    private fun fireViewFallback(query: String): String {
+        // Spec section 5 fallback: ACTION_VIEW on a spotify:search: URI.
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("spotify:search:" + Uri.encode(query)),
+        ).apply {
+            setPackage(SPOTIFY_PACKAGE)
+        }
+        return fire("view-fallback", intent, query)
+    }
+
+    private fun fire(label: String, intent: Intent, query: String): String {
         return try {
             if (intent.resolveActivity(packageManager) != null) {
                 startActivity(intent)
-                Log.i(TAG, "play-from-search fired query=\"$query\"")
-                "Fired for \"$query\" — check Spotify."
+                Log.i(TAG, "$label fired query=\"$query\"")
+                "[$label] Fired for \"$query\" — check Spotify."
             } else {
-                Log.w(TAG, "no handler for Spotify play-from-search (Spotify missing or not visible?)")
-                "Spotify not reachable — is it installed?"
+                Log.w(TAG, "$label: no handler (Spotify missing or not visible?)")
+                "[$label] Spotify not reachable — is it installed?"
             }
         } catch (e: ActivityNotFoundException) {
-            Log.e(TAG, "Spotify play-from-search failed", e)
-            "Failed: ${e.message}"
+            Log.e(TAG, "$label failed", e)
+            "[$label] Failed: ${e.message}"
         }
     }
 }
 
 @Composable
-fun M0Screen(onPlay: (String) -> String) {
+fun M0Screen(
+    onUnstructured: (String) -> String,
+    onStructured: (String) -> String,
+    onViewFallback: (String) -> String,
+) {
     var query by remember { mutableStateOf("Shape of You") }
-    var status by remember { mutableStateOf("Type a song, tap Play.") }
+    var status by remember { mutableStateOf("Type a song, tap a variant.") }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -93,11 +129,27 @@ fun M0Screen(onPlay: (String) -> String) {
         )
         Spacer(Modifier.height(12.dp))
         Button(
-            onClick = { status = onPlay(query.trim()) },
+            onClick = { status = onUnstructured(query.trim()) },
             enabled = query.isNotBlank(),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Play on Spotify")
+            Text("Play: unstructured")
+        }
+        Spacer(Modifier.height(8.dp))
+        Button(
+            onClick = { status = onStructured(query.trim()) },
+            enabled = query.isNotBlank(),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Play: structured title")
+        }
+        Spacer(Modifier.height(8.dp))
+        Button(
+            onClick = { status = onViewFallback(query.trim()) },
+            enabled = query.isNotBlank(),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Open: spotify:search:")
         }
         Spacer(Modifier.height(12.dp))
         Text(status, style = MaterialTheme.typography.bodyMedium)
