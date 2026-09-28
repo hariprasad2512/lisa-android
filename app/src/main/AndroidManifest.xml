@@ -7,6 +7,9 @@
         <package android:name="com.spotify.music" />
     </queries>
 
+    <!-- M8-spike: Web API calls. Normal permission, granted at install. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@android:mipmap/sym_def_app_icon"
@@ -19,6 +22,21 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <!-- AppAuth OAuth redirect target. Scheme + host must exactly match
+             the redirect URI allowlisted in the Spotify dashboard:
+             com.hpsdstudio.lisa://oauth2redirect -->
+        <activity
+            android:name="net.openid.appauth.RedirectUriReceiverActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="oauth2redirect"
+                    android:scheme="com.hpsdstudio.lisa" />
             </intent-filter>
         </activity>
     </application>

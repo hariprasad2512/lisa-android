@@ -7,6 +7,8 @@ kotlin = "2.4.20"
 composeBom = "2026.06.01"
 activityCompose = "1.12.4"
 coreKtx = "1.18.0"
+appauth = "0.11.1"
+datastorePreferences = "1.2.1"
 compileSdk = "36"
 targetSdk = "36"
 minSdk = "26"
@@ -21,6 +23,8 @@ androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", versi
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+appauth = { group = "net.openid", name = "appauth", version.ref = "appauth" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
