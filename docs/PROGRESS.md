@@ -36,3 +36,26 @@ front): install, play "Shape of You" then "Sahiba", paste
 Premium. This answers spec risk #1 and sizes M8 (Web API).
 
 **Known issues:** none yet (unverified on device).
+
+## M0 verification — on-device result (2026-09-28)
+
+**Result: search page only, no autoplay.** Device: CMF Phone 2 Pro, Spotify
+**Premium**, screen on, app in front. Both queries opened Spotify's search
+page; playback did NOT start.
+
+Log (`adb logcat -s Lisa:*`), pasted back by tester:
+```
+09-28 16:33:21.076 I Lisa : play-from-search fired query="Shape of You"
+09-28 16:33:43.291 I Lisa : play-from-search fired query="Sahiba"
+09-28 16:34:20.397 I Lisa : play-from-search fired query="Shape of You"
+```
+Intents fired cleanly, so our side is correct — Spotify chose search-only.
+
+**Decision:** unstructured Phase 1 intent alone cannot autoplay (spec risk #1
+answered for this path). M0 acceptance is still met: we know exactly what
+happens instead. Weight shifts to M8 (Web API play-by-URI; Premium present).
+Before closing Phase 1, run one structured-intent experiment
+(`EXTRA_MEDIA_TITLE` + audio focus, plus `ACTION_VIEW spotify:search:`
+fallback) — it may autoplay on a confident match, though no doc promises it.
+
+**Next:** M0 follow-up experiment, then M1 (foreground service + permissions).
