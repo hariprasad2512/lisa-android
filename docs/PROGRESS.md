@@ -86,3 +86,29 @@ starting a song needs the API.
 
 **Next:** M8-spike — PKCE login (AppAuth) + search + play-by-URI from a
 debug screen, proving the API path before the pipeline is built on it.
+
+## M8-spike — API path proven, active device required (2026-09-28)
+
+**Done:** PKCE login + search + play-by-URI debug section (commit `9aa1ec8`).
+New pins: `net.openid:appauth 0.11.1`, `androidx.datastore:datastore-preferences
+1.2.1`. Chose DataStore over EncryptedSharedPreferences (deprecated in
+security-crypto 1.1.0). Client ID via git-ignored `local.properties` →
+`BuildConfig.SPOTIFY_CLIENT_ID`; redirect `com.hpsdstudio.lisa://oauth2redirect`.
+
+**Result: login ✓, search ✓ (10/10 hits), play ✓ when playback is active.**
+Without an active device, `play` returns 404 `NO_ACTIVE_DEVICE` (four
+identical attempts). Tester confirms: "working when there is playback active."
+
+Log (abridged):
+```
+09-28 17:49:13.699 I Lisa : spotify login ok
+09-28 17:49:15.794 I Lisa : spotify search query="Sahiba" hits=10
+09-28 17:49:18.156 I Lisa : spotify play uri="spotify:track:0eLtIxPRNJfsmehITZ1qaJ" code=404 ...
+                           "reason" : "NO_ACTIVE_DEVICE"
+```
+
+**Decision:** M8 path proven for personal Premium use. M5 must handle the
+cold case: list devices (`GET /me/player/devices`) → transfer playback to
+the phone (`PUT /me/player`) → `play`. No extra spike needed.
+
+**Next:** M1 — foreground mic service + permissions + tile + debug skeleton.
