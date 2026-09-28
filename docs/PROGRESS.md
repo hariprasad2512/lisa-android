@@ -58,4 +58,31 @@ Before closing Phase 1, run one structured-intent experiment
 (`EXTRA_MEDIA_TITLE` + audio focus, plus `ACTION_VIEW spotify:search:`
 fallback) — it may autoplay on a confident match, though no doc promises it.
 
-**Next:** M0 follow-up experiment, then M1 (foreground service + permissions).
+**Next:** M0 follow-up experiment (structured + ACTION_VIEW variants), then
+M1 (foreground service + permissions).
+
+## M0 follow-up — all intent variants search-only, Phase 1 closed (2026-09-28)
+
+**Done:** added two variant buttons (commit `a1739e3`): structured Song mode
+(`EXTRA_MEDIA_FOCUS = Audio.Media.ENTRY_CONTENT_TYPE` + `EXTRA_MEDIA_TITLE`
++ `QUERY`) and `ACTION_VIEW spotify:search:<query>` fallback. Verified
+green build, pushed, tester re-ran on the same device (Premium, screen on).
+
+**Result: all three variants open Spotify search only, no autoplay.**
+
+Log pasted back by tester:
+```
+09-28 16:39:26.513 I Lisa : play-from-search fired query="Shape of You"
+09-28 16:39:33.970 I Lisa : structured fired query="Shape of You"
+09-28 16:39:41.512 I Lisa : view-fallback fired query="Shape of You"
+09-28 16:39:53.470 I Lisa : structured fired query="Sahiba"
+09-28 16:39:57.807 I Lisa : play-from-search fired query="Sahiba"
+```
+
+**Decision: Phase 1 (media intents) is closed — no intent variant autoplays,
+so M8 (Spotify Web API) is REQUIRED, not optional.** Transport keys
+(pause/resume/next/prev via media-key events) remain valid for M5; only
+starting a song needs the API.
+
+**Next:** M8-spike — PKCE login (AppAuth) + search + play-by-URI from a
+debug screen, proving the API path before the pipeline is built on it.
