@@ -1,0 +1,24 @@
+# Android / Gradle
+*.apk
+*.aab
+*.ap_
+*.dex
+local.properties
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.hprof
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.iws
+.DS_Store
+
+# Kotlin
+*.class
+
+# Secrets — never commit (Spotify client ID etc. go in local.properties)
+local.properties

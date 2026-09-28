@@ -1,0 +1,27 @@
+# Pinned versions. Rule: never guess — every version below was looked up
+# in the official release notes / Maven metadata on 2026-09-28.
+# See docs/PROGRESS.md (M0) for why composeBom is 2026.06.01 and not newer.
+[versions]
+agp = "9.4.0"
+kotlin = "2.4.20"
+composeBom = "2026.06.01"
+activityCompose = "1.12.4"
+coreKtx = "1.18.0"
+compileSdk = "36"
+targetSdk = "36"
+minSdk = "26"
+
+[libraries]
+# KGP version for AGP 9.x built-in Kotlin (declared via buildscript classpath
+# in the root build file; the kotlin-android plugin must NOT be applied).
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
